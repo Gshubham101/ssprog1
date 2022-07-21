@@ -1,0 +1,76 @@
+%{
+int cc=0;
+%}
+%x CML CSL
+%%
+&quot;/*&quot; {
+BEGIN CML; cc++;}
+&lt;CML&gt;. ;
+&lt;CML&gt;&quot;*/&quot; {BEGIN 0;}
+&quot;//&quot; {BEGIN CSL; cc++;}
+&lt;CSL&gt;. ;
+&lt;CSL&gt;\n {BEGIN 0;}
+%%
+int main(int argc, char *argv[])
+{
+if(argc!=3)
+{
+printf(&quot;usage is %s &lt;src file&gt; &lt;dest
+file&gt;\n&quot;,argv[0]);
+return;
+}
+yyin=fopen(argv[1],&quot;r&quot;);
+yyout=fopen(argv[2],&quot;w&quot;);
+yylex();
+printf(&quot;no. of comment lines=%d\n&quot;,cc);
+}
+
+
+
+
+
+%{
+#include&lt;stdio.h&gt;
+#include &quot;y.tab.h&quot;
+extern int yylval;
+%}
+%%
+[\t] ;
+[+|-|*|/|=|&lt;|&gt;] {printf(&quot;operator is %s\n&quot;,yytext);return OP;}
+[0-9]+ {yylval=atoi(yytext);printf(&quot;number is %d\n&quot;,yylval);return DIGIT;}
+int|char|bool|float|void|for|while|if {printf(&quot;keyword is %s\n&quot;,yytext);return KEY;}
+[a-zA-Z0-9]+ {printf(&quot;Identifier is %s\n&quot;,yytext);return ID;}
+. ;
+%%
+
+yacc
+
+%{
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+int id=0,dig=0,key=0,op=0;
+%}
+%token ID,DIGIT,KEY,OP
+%%
+input:
+DIGIT input{dig++;}
+| ID input{id++;}
+| KEY input{key++;}
+| OP input {op++;}
+| DIGIT {dig++;}
+| ID {id++;}
+| KEY {key++;}
+| OP {op++;}
+%%
+extern FILE *yyin;
+main(int argc, char *argv[])
+{
+yyin=fopen(argv[1],&quot;r&quot;);
+yyparse();
+printf(&quot;digit=%d\n,id=%d\n,key=%d\n,op=%d\n&quot;,dig,id,key,op);
+}
+yyerror()
+{
+printf(&quot;error\n&quot;);
+exit(0);
+}
