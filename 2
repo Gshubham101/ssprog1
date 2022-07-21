@@ -1,0 +1,31 @@
+%{
+#include &quot;y.tab.h&quot;
+%}
+%%
+a return A;
+b return B;
+.|\n return yytext[0];
+%%
+
+%{
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+%}
+%token A B
+%%
+str:S &#39;\n&#39; {return 0;}
+S:A S
+S:B
+;
+%%
+main()
+{
+printf(&quot;enter string\n&quot;);
+yyparse();
+printf(&quot;valid\n&quot;);
+}
+int yyerror()
+{
+printf(&quot;error\n&quot;);
+exit(0);
+}
